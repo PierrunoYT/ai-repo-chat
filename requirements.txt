@@ -3,3 +3,8 @@ llama-index-readers-github
 python-dotenv
 openai
 requests
+
+# Development dependencies
+pytest
+pytest-mock
+coverage

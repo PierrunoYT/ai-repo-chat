@@ -68,8 +68,34 @@ python repo_chat.py "https://github.com/owner/repo" "What is the overall archite
 
 1. **Repository Loading**: The tool uses LlamaIndex's `GithubRepositoryReader` to clone and load the repository content
 2. **Content Indexing**: Creates a vector index of all repository files for efficient searching
-3. **AI Query**: Uses OpenAI's models to answer questions based on the indexed content
-4. **Response**: Returns AI-generated answers based on the repository's actual code and documentation
+3. **Index Persistence**: Saves indexes to disk and automatically detects repository updates
+4. **AI Query**: Uses OpenAI's models to answer questions based on the indexed content
+5. **Response**: Returns AI-generated answers based on the repository's actual code and documentation
+
+## Testing
+
+Run the test suite to verify functionality:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-mock coverage
+
+# Run all tests
+python -m pytest test_repo_chat.py -v
+
+# Run tests with coverage
+python -m pytest test_repo_chat.py --cov=repo_chat --cov-report=html
+
+# Run specific test
+python -m pytest test_repo_chat.py::TestRepoChat::test_get_latest_commit_sha_success -v
+```
+
+The test suite includes:
+- Unit tests for all helper functions
+- Mocked GitHub API calls
+- Metadata persistence testing
+- Integration tests for the complete workflow
+- Error handling and edge case testing
 
 ## Requirements
 
