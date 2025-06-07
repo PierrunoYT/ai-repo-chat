@@ -2,8 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from llama_index.core import VectorStoreIndex
-from llama_index.readers.github import GithubRepositoryReader
-from github import Github
+from llama_index.readers.github import GithubRepositoryReader, GithubClient
 
 def chat_with_github_repo(repo_url: str, question: str):
     """
@@ -25,8 +24,8 @@ def chat_with_github_repo(repo_url: str, question: str):
         # Extract owner and repo name from the URL
         owner, repo = repo_url.split("/")[-2:]
 
-        # Initialize GitHub client (works with public repos without token)
-        github_client = Github()
+        # Initialize GitHub client (no token needed for public repos)
+        github_client = GithubClient(github_token=None, verbose=False)
 
         # Instantiate the reader with the repository details
         loader = GithubRepositoryReader(

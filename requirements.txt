@@ -2,4 +2,3 @@ llama-index
 llama-index-readers-github
 python-dotenv
 openai
-PyGithub
