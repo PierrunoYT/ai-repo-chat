@@ -3,6 +3,7 @@ import os
 import json
 import tempfile
 import shutil
+import requests
 from unittest.mock import patch, MagicMock, mock_open
 from datetime import datetime
 
@@ -28,7 +29,7 @@ class TestRepoChat(unittest.TestCase):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
-    @patch('repo_chat.requests.get')
+    @patch('requests.get')
     def test_get_latest_commit_sha_success(self, mock_get):
         """Test successful retrieval of commit SHA."""
         # Mock successful API response
@@ -47,7 +48,7 @@ class TestRepoChat(unittest.TestCase):
             headers={"Authorization": f"token {self.test_token}"}
         )
 
-    @patch('repo_chat.requests.get')
+    @patch('requests.get')
     def test_get_latest_commit_sha_no_token(self, mock_get):
         """Test commit SHA retrieval without token."""
         mock_response = MagicMock()
@@ -65,7 +66,7 @@ class TestRepoChat(unittest.TestCase):
             headers={}
         )
 
-    @patch('repo_chat.requests.get')
+    @patch('requests.get')
     def test_get_latest_commit_sha_api_error(self, mock_get):
         """Test commit SHA retrieval with API error."""
         mock_response = MagicMock()
@@ -76,7 +77,7 @@ class TestRepoChat(unittest.TestCase):
         
         self.assertIsNone(result)
 
-    @patch('repo_chat.requests.get')
+    @patch('requests.get')
     def test_get_latest_commit_sha_exception(self, mock_get):
         """Test commit SHA retrieval with exception."""
         mock_get.side_effect = Exception("Network error")
