@@ -52,7 +52,7 @@ Thumbs.db
 # Logs
 *.log
 
-# LlamaIndex cache
+# LlamaIndex cache and storage
 .cache/
 storage/
 
