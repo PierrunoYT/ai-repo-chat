@@ -20,12 +20,21 @@ def chat_with_github_repo(repo_url: str, question: str):
     if not os.getenv("OPENAI_API_KEY"):
         raise ValueError("OpenAI API key not found. Please set it in your .env file.")
 
+    # Get GitHub token (optional for public repos, but required by LlamaIndex)
+    github_token = os.getenv("GITHUB_TOKEN")
+    if not github_token:
+        raise ValueError(
+            "GitHub token not found. Please set GITHUB_TOKEN in your .env file.\n"
+            "You can create a token at: https://github.com/settings/tokens\n"
+            "For public repos, you only need 'public_repo' scope."
+        )
+
     try:
         # Extract owner and repo name from the URL
         owner, repo = repo_url.split("/")[-2:]
 
-        # Initialize GitHub client (no token needed for public repos)
-        github_client = GithubClient(github_token=None, verbose=False)
+        # Initialize GitHub client with token
+        github_client = GithubClient(github_token=github_token, verbose=False)
 
         # Instantiate the reader with the repository details
         loader = GithubRepositoryReader(

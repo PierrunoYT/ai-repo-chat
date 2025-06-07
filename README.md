@@ -13,6 +13,7 @@ Chat with any GitHub repository using AI. This tool clones a GitHub repository, 
 
 - Python 3.7+
 - OpenAI API key
+- GitHub token (for repository access)
 
 ## Installation
 
@@ -32,10 +33,17 @@ Chat with any GitHub repository using AI. This tool clones a GitHub repository, 
    cp .env.example .env
    ```
    
-4. Edit `.env` and add your OpenAI API key:
+4. Edit `.env` and add your API keys:
    ```
    OPENAI_API_KEY=your_openai_api_key_here
+   GITHUB_TOKEN=your_github_token_here
    ```
+
+   **Getting a GitHub Token:**
+   - Go to [GitHub Settings > Tokens](https://github.com/settings/tokens)
+   - Click "Generate new token (classic)"
+   - For public repositories, only select the `public_repo` scope
+   - Copy the generated token and add it to your `.env` file
 
 ## Usage
 
