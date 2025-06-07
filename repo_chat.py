@@ -184,12 +184,28 @@ def chat_with_github_repo(repo_url: str, question: str, force_reindex: bool = Fa
             save_metadata(storage_dir, github_token, owner, repo)
             print(f"Index saved to {storage_dir}")
 
-        # Create a query engine from the index
-        query_engine = index.as_query_engine()
+        # Create a query engine from the index with enhanced configuration
+        query_engine = index.as_query_engine(
+            response_mode="tree_summarize",  # Better for comprehensive responses
+            similarity_top_k=10,  # Retrieve more relevant chunks
+            streaming=False,
+            verbose=True
+        )
 
-        # Query the engine with the user's question
+        # Enhanced prompt for better responses
+        enhanced_question = f"""Based on the repository code and documentation, please provide a detailed answer to this question: {question}
+
+Please include:
+- Specific details found in the code
+- Configuration options or parameters
+- File names and locations where relevant information is found
+- Any version numbers, model names, or technical specifications mentioned
+
+Question: {question}"""
+
+        # Query the engine with the enhanced question
         print("Asking the AI your question...")
-        response = query_engine.query(question)
+        response = query_engine.query(enhanced_question)
 
         # Print the response
         print("\nAI Response:")
