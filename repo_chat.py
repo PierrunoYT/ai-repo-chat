@@ -51,6 +51,60 @@ def save_metadata(storage_dir: str, github_token: str, owner: str, repo: str):
     with open(metadata_file, 'w') as f:
         json.dump(metadata, f, indent=2)
 
+def validate_github_url(url: str) -> bool:
+    """Validate that the URL is a valid GitHub repository URL."""
+    import re
+    pattern = r'^https?://github\.com/[^/]+/[^/]+/?$'
+    return bool(re.match(pattern, url.strip()))
+
+def interactive_mode():
+    """Run the application in interactive mode, prompting for input."""
+    print("🤖 Welcome to RepoChat - Interactive Mode")
+    print("=" * 50)
+    
+    # Get repository URL
+    while True:
+        repo_url = input("\n📁 Enter GitHub repository URL: ").strip()
+        if not repo_url:
+            print("❌ URL cannot be empty. Please try again.")
+            continue
+        
+        # Add https:// if missing
+        if not repo_url.startswith(('http://', 'https://')):
+            repo_url = 'https://' + repo_url
+        
+        if validate_github_url(repo_url):
+            break
+        else:
+            print("❌ Invalid GitHub repository URL. Please use format: https://github.com/owner/repo")
+    
+    # Get question
+    while True:
+        question = input("\n❓ What would you like to know about this repository? ").strip()
+        if question:
+            break
+        print("❌ Question cannot be empty. Please try again.")
+    
+    # Ask about force reindex
+    force_reindex = False
+    reindex_input = input("\n🔄 Force reindex? (y/N): ").strip().lower()
+    if reindex_input in ['y', 'yes']:
+        force_reindex = True
+    
+    print(f"\n🚀 Processing repository: {repo_url}")
+    print(f"❓ Question: {question}")
+    if force_reindex:
+        print("🔄 Force reindexing enabled")
+    print("-" * 50)
+    
+    # Run the chat function
+    try:
+        chat_with_github_repo(repo_url, question, force_reindex)
+    except KeyboardInterrupt:
+        print("\n\n👋 Thanks for using RepoChat!")
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+
 def chat_with_github_repo(repo_url: str, question: str, force_reindex: bool = False):
     """
     Clones a GitHub repository, indexes its content, and answers a question
@@ -146,13 +200,37 @@ def chat_with_github_repo(repo_url: str, question: str, force_reindex: bool = Fa
 
 if __name__ == "__main__":
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Chat with a GitHub repository using AI.")
-    parser.add_argument("repo_url", help="The URL of the GitHub repository (e.g., 'https://github.com/owner/repo').")
-    parser.add_argument("question", help="The question you want to ask about the repository.")
-    parser.add_argument("--force-reindex", action="store_true", help="Force reindexing even if index exists and is up to date.")
+    parser = argparse.ArgumentParser(
+        description="Chat with a GitHub repository using AI.",
+        epilog="Examples:\n"
+               "  %(prog)s https://github.com/owner/repo \"What does this do?\"\n"
+               "  %(prog)s --interactive\n"
+               "  %(prog)s -i",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # Add interactive mode argument
+    parser.add_argument("-i", "--interactive", action="store_true", 
+                       help="Run in interactive mode (prompts for input)")
+    
+    # Make positional arguments optional when in interactive mode
+    parser.add_argument("repo_url", nargs="?", 
+                       help="The URL of the GitHub repository (e.g., 'https://github.com/owner/repo')")
+    parser.add_argument("question", nargs="?", 
+                       help="The question you want to ask about the repository")
+    parser.add_argument("--force-reindex", action="store_true", 
+                       help="Force reindexing even if index exists and is up to date")
 
     # Parse arguments
     args = parser.parse_args()
 
-    # Run the chat function
-    chat_with_github_repo(args.repo_url, args.question, args.force_reindex)
+    # Check if interactive mode or if no arguments provided
+    if args.interactive or (not args.repo_url and not args.question):
+        interactive_mode()
+    else:
+        # Validate that both repo_url and question are provided in non-interactive mode
+        if not args.repo_url or not args.question:
+            parser.error("Both repo_url and question are required when not using interactive mode")
+        
+        # Run the chat function
+        chat_with_github_repo(args.repo_url, args.question, args.force_reindex)

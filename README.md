@@ -47,6 +47,17 @@ Chat with any GitHub repository using AI. This tool clones a GitHub repository, 
 
 ## Usage
 
+### Interactive Mode (Recommended)
+Simply run without arguments to enter interactive mode:
+```bash
+python repo_chat.py
+# or
+python repo_chat.py --interactive
+# or
+python repo_chat.py -i
+```
+
+### Command Line Mode
 ```bash
 python repo_chat.py <repo_url> "<question>"
 ```
@@ -54,15 +65,25 @@ python repo_chat.py <repo_url> "<question>"
 ### Examples
 
 ```bash
-# Ask about the main functionality
+# Interactive mode - prompts for input
+python repo_chat.py
+
+# Command line mode - direct execution
 python repo_chat.py "https://github.com/owner/repo" "What does this repository do?"
 
 # Ask about specific functions
 python repo_chat.py "https://github.com/owner/repo" "How does the authentication work?"
 
-# Ask about architecture
-python repo_chat.py "https://github.com/owner/repo" "What is the overall architecture of this project?"
+# Force reindexing with command line
+python repo_chat.py "https://github.com/owner/repo" "What changed?" --force-reindex
 ```
+
+### Interactive Mode Features
+- 🔍 **URL Validation**: Automatically validates GitHub repository URLs
+- ✨ **Smart Input**: Auto-adds `https://` if missing from URLs
+- 🔄 **Reindex Option**: Prompts whether to force reindexing
+- ❌ **Error Handling**: Clear error messages and retry prompts
+- 🎨 **User-Friendly**: Emoji-enhanced interface for better UX
 
 ## How it Works
 
