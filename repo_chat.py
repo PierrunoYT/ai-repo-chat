@@ -6,22 +6,21 @@ from dotenv import load_dotenv
 from llama_index.core import VectorStoreIndex, StorageContext, load_index_from_storage
 from llama_index.readers.github import GithubRepositoryReader, GithubClient
 
-def get_latest_commit_sha(github_client, owner: str, repo: str) -> str:
+def get_latest_commit_sha(github_token: str, owner: str, repo: str) -> str:
     """Get the latest commit SHA for the repository."""
+    import requests
+    url = f"https://api.github.com/repos/{owner}/{repo}/branches/main"
+    headers = {"Authorization": f"token {github_token}"} if github_token else {}
+    
     try:
-        repo_obj = github_client.get_repo(f"{owner}/{repo}")
-        return repo_obj.get_branch("main").commit.sha
-    except Exception:
-        # Fallback to using requests if github client doesn't have get_repo
-        import requests
-        url = f"https://api.github.com/repos/{owner}/{repo}/branches/main"
-        headers = {"Authorization": f"token {github_client.github_token}"} if github_client.github_token else {}
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()["commit"]["sha"]
         return None
+    except Exception:
+        return None
 
-def needs_reindex(storage_dir: str, github_client, owner: str, repo: str) -> bool:
+def needs_reindex(storage_dir: str, github_token: str, owner: str, repo: str) -> bool:
     """Check if repository needs reindexing based on latest commit."""
     metadata_file = os.path.join(storage_dir, "metadata.json")
     
@@ -33,16 +32,16 @@ def needs_reindex(storage_dir: str, github_client, owner: str, repo: str) -> boo
             metadata = json.load(f)
         
         stored_sha = metadata.get("last_commit_sha")
-        current_sha = get_latest_commit_sha(github_client, owner, repo)
+        current_sha = get_latest_commit_sha(github_token, owner, repo)
         
         return stored_sha != current_sha
     except Exception:
         return True
 
-def save_metadata(storage_dir: str, github_client, owner: str, repo: str):
+def save_metadata(storage_dir: str, github_token: str, owner: str, repo: str):
     """Save repository metadata including latest commit SHA."""
     metadata = {
-        "last_commit_sha": get_latest_commit_sha(github_client, owner, repo),
+        "last_commit_sha": get_latest_commit_sha(github_token, owner, repo),
         "last_indexed": datetime.now().isoformat(),
         "owner": owner,
         "repo": repo
@@ -89,7 +88,7 @@ def chat_with_github_repo(repo_url: str, question: str, force_reindex: bool = Fa
         storage_dir = f"./storage/{owner}_{repo}"
         
         # Check if index needs to be created or updated
-        should_reindex = force_reindex or not os.path.exists(storage_dir) or needs_reindex(storage_dir, github_client, owner, repo)
+        should_reindex = force_reindex or not os.path.exists(storage_dir) or needs_reindex(storage_dir, github_token, owner, repo)
         
         if not should_reindex:
             print(f"Loading existing index for {owner}/{repo}...")
@@ -128,7 +127,7 @@ def chat_with_github_repo(repo_url: str, question: str, force_reindex: bool = Fa
             index.storage_context.persist(persist_dir=storage_dir)
             
             # Save metadata
-            save_metadata(storage_dir, github_client, owner, repo)
+            save_metadata(storage_dir, github_token, owner, repo)
             print(f"Index saved to {storage_dir}")
 
         # Create a query engine from the index
