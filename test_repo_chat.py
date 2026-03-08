@@ -4,7 +4,7 @@ import json
 import tempfile
 import shutil
 import requests
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 from datetime import datetime
 
 from repo_chat import (
@@ -45,7 +45,8 @@ class TestRepoChat(unittest.TestCase):
         self.assertEqual(result, self.test_sha)
         mock_get.assert_called_once_with(
             f"https://api.github.com/repos/{self.test_owner}/{self.test_repo}/branches/main",
-            headers={"Authorization": f"token {self.test_token}"}
+            headers={"Authorization": f"token {self.test_token}"},
+            timeout=10
         )
 
     @patch('requests.get')
@@ -63,7 +64,8 @@ class TestRepoChat(unittest.TestCase):
         self.assertEqual(result, self.test_sha)
         mock_get.assert_called_once_with(
             f"https://api.github.com/repos/{self.test_owner}/{self.test_repo}/branches/main",
-            headers={}
+            headers={},
+            timeout=10
         )
 
     @patch('requests.get')
@@ -80,7 +82,7 @@ class TestRepoChat(unittest.TestCase):
     @patch('requests.get')
     def test_get_latest_commit_sha_exception(self, mock_get):
         """Test commit SHA retrieval with exception."""
-        mock_get.side_effect = Exception("Network error")
+        mock_get.side_effect = requests.RequestException("Network error")
         
         result = get_latest_commit_sha(self.test_token, self.test_owner, self.test_repo)
         
@@ -226,7 +228,7 @@ class TestRepoChat(unittest.TestCase):
         mock_load_index.return_value = mock_index
         
         # Mock stdout to capture prints
-        with patch('builtins.print') as mock_print:
+        with patch('builtins.print'):
             chat_with_github_repo("https://github.com/owner/repo", "test question")
         
         # Verify index was loaded, not created
